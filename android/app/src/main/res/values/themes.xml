@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.DAKAStage2" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#3e5344</item>
+        <item name="android:navigationBarColor">#3e5344</item>
+        <item name="android:windowBackground">#f3efe6</item>
+        <item name="android:colorPrimary">#3e5344</item>
+    </style>
+</resources>
