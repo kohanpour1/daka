@@ -1,0 +1,59 @@
+{
+  "name": "daka-stage2",
+  "productName": "DAKA Stage 2",
+  "version": "1.0.0",
+  "description": "ثبت کد تأیید مرحله ۲ — شرکت کیهان سازه پارت",
+  "main": "main.js",
+  "author": "DAKA | کیهان سازه پارت",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist:win": "electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "ir.daka.stage2",
+    "productName": "DAKA Stage 2",
+    "copyright": "Copyright © کیهان سازه پارت",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../www",
+        "to": "www",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "DAKA-Stage2-Portable-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "DAKA-Stage2-Portable-${version}.${ext}"
+    },
+    "asar": true,
+    "compression": "maximum"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}
