@@ -18,38 +18,31 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Android environment
-        run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
-          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          echo "Using SDK at $SDK"
-          ls "$SDK" || true
-          # Accept licenses and install required packages
-          yes | "$SDK"/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
-          if [ -x "$SDK"/cmdline-tools/latest/bin/sdkmanager ]; then
-            SM="$SDK/cmdline-tools/latest/bin/sdkmanager"
-          else
-            SM=$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -n1)
-          fi
-          echo "sdkmanager=$SM"
-          yes | "$SM" --licenses >/dev/null 2>&1 || true
-          "$SM" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Sync web assets into Android
         run: |
           mkdir -p android/app/src/main/assets/www
-          cp -f www/index.html www/app.css www/app.boot.js www/app.p0.b64 www/app.p1.b64 www/app.p2.b64 www/app.p3.b64 www/app.p4.b64 android/app/src/main/assets/www/
+          cp -f www/index.html www/app.css www/app.js android/app/src/main/assets/www/
+          # Ensure SheetJS is present offline in the APK
+          if [ -f www/xlsx.full.min.js ]; then
+            cp -f www/xlsx.full.min.js android/app/src/main/assets/www/
+          else
+            curl -fsSL -o android/app/src/main/assets/www/xlsx.full.min.js \
+              "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
+          fi
+          ls -la android/app/src/main/assets/www/
 
       - name: Generate Gradle Wrapper
         working-directory: android
         run: |
-          if ! command -v gradle >/dev/null 2>&1; then
+          gradle wrapper --gradle-version 8.7 --distribution-type bin || true
+          if [ ! -f gradlew ]; then
             curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /tmp/gradle.zip
             sudo unzip -q /tmp/gradle.zip -d /opt
-            export PATH="/opt/gradle-8.7/bin:$PATH"
+            /opt/gradle-8.7/bin/gradle wrapper --gradle-version 8.7 --distribution-type bin
           fi
-          gradle wrapper --gradle-version 8.7 --distribution-type bin
           chmod +x gradlew
 
       - name: Build Debug APK
