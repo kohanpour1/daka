@@ -4,17 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#3e5344" />
-  <title>ثبت کد تأیید | DAKA</title>
+  <title>ثبت کد تأیید | DK</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'"></script>
+  <script>
+    window.__xlsxReady = false;
+    function __markXlsx(){ if (typeof XLSX !== 'undefined') window.__xlsxReady = true; }
+    function __loadXlsx(src, next){
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = function(){ __markXlsx(); };
+      s.onerror = function(){ if (next) next(); };
+      document.head.appendChild(s);
+    }
+    __loadXlsx('xlsx.full.min.js', function(){
+      __loadXlsx('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', function(){
+        __loadXlsx('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+      });
+    });
+  </script>
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
   <div id="page1" class="page">
     <header class="top">
-      <div class="logo">DAKA</div>
+      <div class="logo">DK</div>
       <h1>مشخصات محل و کاربر</h1>
       <p class="sub">یک‌بار وارد کنید؛ دفعات بعد ذخیره می‌ماند</p>
     </header>
@@ -45,7 +60,7 @@
 
   <div id="page2" class="page hidden">
     <header class="top">
-      <div class="logo">DAKA</div>
+      <div class="logo">DK</div>
       <h1>ثبت کد تأیید</h1>
       <p class="sub" id="placeLine"></p>
       <button type="button" id="btnEditPlace" class="linkish">تغییر مشخصات محل / کاربر</button>
