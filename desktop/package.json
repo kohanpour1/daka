@@ -2,11 +2,15 @@
   "name": "daka-stage2",
   "productName": "DAKA Stage 2",
   "version": "1.0.0",
-  "description": "ثبت کد تأیید مرحله ۲ — شرکت کیهان سازه پارت",
+  "description": "ثبت کد تأیید — شرکت کیهان سازه پارت",
   "main": "main.js",
   "author": "DAKA | کیهان سازه پارت",
   "license": "UNLICENSED",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kohanpour1/daka.git"
+  },
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -16,6 +20,7 @@
     "appId": "ir.daka.stage2",
     "productName": "DAKA Stage 2",
     "copyright": "Copyright © کیهان سازه پارت",
+    "publish": null,
     "directories": {
       "output": "dist",
       "buildResources": "build"
