@@ -2,9 +2,15 @@ package ir.daka.stage2;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -13,12 +19,16 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+
 public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private static final int FILE_CHOOSER_REQUEST = 1001;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +47,11 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        webView.addJavascriptInterface(new WebAppBridge(), "Android");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -71,6 +86,53 @@ public class MainActivity extends Activity {
         });
 
         webView.loadUrl("file:///android_asset/www/index.html");
+    }
+
+    public class WebAppBridge {
+        @JavascriptInterface
+        public void saveFile(String filename, String mime, String base64Data) {
+            try {
+                byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+                Uri uri = null;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+                    values.put(MediaStore.Downloads.MIME_TYPE, mime);
+                    values.put(MediaStore.Downloads.IS_PENDING, 1);
+                    uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri != null) {
+                        try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                            if (out != null) out.write(bytes);
+                        }
+                        values.clear();
+                        values.put(MediaStore.Downloads.IS_PENDING, 0);
+                        getContentResolver().update(uri, values, null, null);
+                    }
+                } else {
+                    File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    if (!dir.exists()) dir.mkdirs();
+                    File file = new File(dir, filename);
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        fos.write(bytes);
+                    }
+                    uri = Uri.fromFile(file);
+                }
+
+                final boolean ok = uri != null;
+                runOnUiThread(() -> Toast.makeText(
+                        MainActivity.this,
+                        ok ? "ذخیره شد: پوشه دانلودها" : "ذخیره ناموفق",
+                        Toast.LENGTH_LONG
+                ).show());
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(
+                        MainActivity.this,
+                        "خطا در ذخیره: " + e.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show());
+            }
+        }
     }
 
     @Override
