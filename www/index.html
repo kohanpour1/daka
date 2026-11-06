@@ -50,54 +50,61 @@
         </label>
         <button type="button" class="btn btn-ghost" id="clearSourcesBtn">پاک کردن فهرست بارگذاری‌شده</button>
       </div>
-      <div id="sourceStatus" class="status" aria-live="polite"></div>
-      <div class="options-row">
-        <label class="check"><input type="checkbox" id="includeHead" checked /> احتساب سرپرست در تعداد اعضا</label>
-        <label class="field-inline">سرانه (کیلوگرم)
-          <input type="number" id="quotaPer" min="1" step="1" value="8" />
-        </label>
+      <div class="progress hidden" id="loadProgress"><i id="loadProgressBar"></i></div>
+      <div class="stats">
+        <div class="stat"><b id="statFiles">0</b><span>فایل</span></div>
+        <div class="stat"><b id="statPeople">0</b><span>کد ملی یکتا</span></div>
+      </div>
+      <div class="settings-row">
+        <label>سرانه (کیلوگرم): <input type="number" id="perCapita" min="0" step="1" value="8" /></label>
+        <label><input type="checkbox" id="includeHead" checked /> سرپرست + تحت‌تکفل</label>
       </div>
     </section>
-
-    <!-- Query -->
-    <section class="card" id="queryCard">
+    <!-- Lookup -->
+    <section class="card">
       <h2>۲) استعلام کد ملی</h2>
-      <div class="query-row">
-        <input id="nidInput" class="input-lg" inputmode="numeric" maxlength="10" placeholder="کد ملی ۱۰ رقمی" autocomplete="off" />
-        <button type="button" class="btn btn-primary btn-lg" id="queryBtn">استعلام</button>
+      <p class="hint">کد ملی ۱۰ رقمی را وارد کنید و استعلام بگیرید.</p>
+      <div class="stack">
+        <div>
+          <label class="field-label" for="nidInput">کد ملی</label>
+          <input id="nidInput" class="input-lg" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="۰۰۱۲۳۴۵۶۷۸" />
+        </div>
+        <button type="button" class="btn btn-primary btn-lg" id="lookupBtn">استعلام</button>
       </div>
-      <div id="queryMsg" class="status" aria-live="polite"></div>
-      <div id="resultBox" class="result-box hidden"></div>
+      <div id="lookupStatus" class="hint" style="margin-top:12px"></div>
     </section>
-
-    <!-- Confirm code -->
-    <section class="card hidden" id="confirmCard">
-      <h2>۳) ثبت کد تأیید</h2>
-      <div class="query-row">
-        <input id="codeInput" class="input-lg" placeholder="کد تأیید" autocomplete="off" />
+    <!-- Result + code -->
+    <section class="card hidden" id="resultCard">
+      <h2>۳) مشخصات و ثبت کد تأیید</h2>
+      <div id="statusBadge" style="margin-bottom:10px"></div>
+      <div class="result-grid" id="resultGrid"></div>
+      <div class="stack">
+        <div>
+          <label class="field-label" for="codeInput">کد تأیید</label>
+          <input id="codeInput" class="input-md" inputmode="numeric" autocomplete="off" placeholder="کد تأیید را وارد کنید" />
+        </div>
         <button type="button" class="btn btn-ok btn-lg" id="saveBtn">ثبت</button>
       </div>
-      <div id="saveMsg" class="status" aria-live="polite"></div>
     </section>
-
     <!-- Registered list -->
-    <section class="card" id="listCard">
-      <div class="card-head">
-        <h2>موارد ثبت‌شده</h2>
-        <button type="button" class="btn btn-ghost" id="toggleListBtn">نمایش / مخفی</button>
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0">۴) موارد ثبت‌شده این ماه</h2>
+        <button type="button" class="btn btn-secondary" id="toggleListBtn" style="min-height:44px;font-size:15px">نمایش / مخفی</button>
       </div>
-      <div id="listWrap" class="list-wrap">
-        <div id="listEmpty" class="hint">هنوز موردی ثبت نشده است.</div>
-        <div id="listBody"></div>
-      </div>
-      <div class="export-row">
-        <button type="button" class="btn btn-primary btn-lg" id="exportBtn">خروجی اکسل</button>
+      <p class="hint" id="registeredCount">۰ مورد ثبت شده</p>
+      <div id="registeredList"></div>
+      <div class="stack" style="margin-top:14px">
+        <button type="button" class="btn btn-primary btn-lg" id="exportBtn">خروجی اکسل مرحله ۲</button>
       </div>
     </section>
+    <footer>
+      <strong>شرکت کیهان سازه پارت</strong>
+      <div>۰۹۱۵۷۴۰۷۶۱۷ — DAKA</div>
+      <div style="margin-top:6px">اطلاعات فقط روی همین دستگاه ذخیره می‌شود</div>
+    </footer>
   </main>
-  <footer class="footer">
-    <div>شرکت کیهان سازه پارت · ۰۹۱۵۷۴۰۷۶۱۷ · DAKA</div>
-  </footer>
+  <div class="toast" id="toast"></div>
   <script src="app.boot.js"></script>
 </body>
 </html>
