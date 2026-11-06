@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#3e5344" />
+  <title>ثبت کد تأیید — مرحله ۲ | DAKA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="brand">
+        <div class="brand-mark">DK</div>
+        <div>
+          <h1>ثبت کد تأیید — مرحله ۲</h1>
+          <p>سامانه ورود کد تأیید آرد خام روستایی</p>
+        </div>
+      </div>
+      <div class="period">
+        <select id="monthSelect" aria-label="ماه"></select>
+        <select id="yearSelect" aria-label="سال"></select>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="card" id="loadCard">
+      <h2>۱) بارگذاری فایل‌های خریداران</h2>
+      <p class="hint">یک یا چند فایل اکسل لیست خریداران را انتخاب کنید. جستجو روی همه فایل‌ها انجام می‌شود.</p>
+      <div class="file-actions">
+        <label class="btn btn-primary btn-lg">
+          انتخاب فایل‌های اکسل
+          <input id="fileInput" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple class="hidden" />
+        </label>
+        <button type="button" class="btn btn-ghost" id="clearSourcesBtn">پاک کردن فهرست بارگذاری‌شده</button>
+      </div>
+      <div class="progress hidden" id="loadProgress"><i id="loadProgressBar"></i></div>
+      <div class="stats">
+        <div class="stat"><b id="statFiles">0</b><span>فایل</span></div>
+        <div class="stat"><b id="statPeople">0</b><span>کد ملی یکتا</span></div>
+      </div>
+      <div class="settings-row">
+        <label>سرانه (کیلوگرم): <input type="number" id="perCapita" min="0" step="1" value="8" /></label>
+        <label><input type="checkbox" id="includeHead" checked /> سرپرست + تحت‌تکفل</label>
+      </div>
+    </section>
+    <section class="card">
+      <h2>۲) استعلام کد ملی</h2>
+      <p class="hint">کد ملی ۱۰ رقمی را وارد کنید و استعلام بگیرید.</p>
+      <div class="stack">
+        <div>
+          <label class="field-label" for="nidInput">کد ملی</label>
+          <input id="nidInput" class="input-lg" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="۰۰۱۲۳۴۵۶۷۸" />
+        </div>
+        <button type="button" class="btn btn-primary btn-lg" id="lookupBtn">استعلام</button>
+      </div>
+      <div id="lookupStatus" class="hint" style="margin-top:12px"></div>
+    </section>
+    <section class="card hidden" id="resultCard">
+      <h2>۳) مشخصات و ثبت کد تأیید</h2>
+      <div id="statusBadge" style="margin-bottom:10px"></div>
+      <div class="result-grid" id="resultGrid"></div>
+      <div class="stack">
+        <div>
+          <label class="field-label" for="codeInput">کد تأیید</label>
+          <input id="codeInput" class="input-md" inputmode="numeric" autocomplete="off" placeholder="کد تأیید را وارد کنید" />
+        </div>
+        <button type="button" class="btn btn-ok btn-lg" id="saveBtn">ثبت</button>
+      </div>
+    </section>
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0">۴) موارد ثبت‌شده این ماه</h2>
+        <button type="button" class="btn btn-secondary" id="toggleListBtn" style="min-height:44px;font-size:15px">نمایش / مخفی</button>
+      </div>
+      <p class="hint" id="registeredCount">۰ مورد ثبت شده</p>
+      <div id="registeredList"></div>
+      <div class="stack" style="margin-top:14px">
+        <button type="button" class="btn btn-primary btn-lg" id="exportBtn">خروجی اکسل مرحله ۲</button>
+      </div>
+    </section>
+    <footer>
+      <strong>شرکت کیهان سازه پارت</strong>
+      <div>۰۹۱۵۷۴۰۷۶۱۷ — DAKA</div>
+      <div style="margin-top:6px">اطلاعات فقط روی همین دستگاه ذخیره می‌شود</div>
+    </footer>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="app-core.js"></script>
+  <script src="app-ui.js"></script>
+</body>
+</html>

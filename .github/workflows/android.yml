@@ -24,7 +24,7 @@ jobs:
       - name: Sync web assets into Android
         run: |
           mkdir -p android/app/src/main/assets/www
-          cp -f www/index.html android/app/src/main/assets/www/index.html
+          cp -f www/index.html www/app.css www/app-core.js www/app-ui.js android/app/src/main/assets/www/
 
       - name: Generate Gradle Wrapper
         working-directory: android
