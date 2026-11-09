@@ -208,8 +208,16 @@
     var rows = buildRows();
     var p = loadProfile();
     var tag = fileTag();
-    var who = (p.username || p.roosta || p.taavoni || "export").replace(/\s+/g, "-");
-    var name = "DK-" + who + "-" + tag + ".xlsx";
+    function safePart(s, fallback) {
+      s = String(s || "").trim();
+      if (!s) return fallback;
+      return s.replace(/[\\/:*?"<>|\s]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").substring(0, 40);
+    }
+    var userPart = safePart(p.username, "بدون-نام");
+    var placePart = safePart(p.roosta || p.taavoni || p.shahrestan || p.ostan, "");
+    var name = placePart
+      ? ("DK-" + userPart + "-" + placePart + "-" + tag + ".xlsx")
+      : ("DK-" + userPart + "-" + tag + ".xlsx");
 
     function withXlsx() {
       try {
