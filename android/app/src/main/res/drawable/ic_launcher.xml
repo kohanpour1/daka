@@ -4,13 +4,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Green rounded background -->
     <path
         android:fillColor="#3e5344"
-        android:pathData="M18,18h72a12,12 0 0,1 12,12v72a12,12 0 0,1 -12,12h-72a12,12 0 0,1 -12,-12v-72a12,12 0 0,1 12,-12z" />
+        android:pathData="M14,14h80a16,16 0 0,1 16,16v80a16,16 0 0,1 -16,16h-80a16,16 0 0,1 -16,-16v-80a16,16 0 0,1 16,-16z" />
+    <!-- Letter D -->
     <path
         android:fillColor="#f7f3ea"
-        android:pathData="M34,68 L34,40 L42,40 L42,52 L54,40 L64,40 L50,54 L66,68 L56,68 L42,56 L42,68 Z" />
+        android:fillType="evenOdd"
+        android:pathData="M26,36 L26,72 L44,72 C58,72 62,63 62,54 C62,45 58,36 44,36 Z M35,45 L35,63 L44,63 C50,63 51,58 51,54 C51,50 50,45 44,45 Z" />
+    <!-- Letter K -->
     <path
         android:fillColor="#f7f3ea"
-        android:pathData="M70,40 L78,40 L78,68 L70,68 Z" />
+        android:pathData="M68,36 L77,36 L77,50 L88,36 L98,36 L84,52 L98,72 L88,72 L77,56 L77,72 L68,72 Z" />
 </vector>
