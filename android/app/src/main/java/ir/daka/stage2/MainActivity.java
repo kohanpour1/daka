@@ -119,12 +119,19 @@ public class MainActivity extends Activity {
                     uri = Uri.fromFile(file);
                 }
 
-                final boolean ok = uri != null;
-                runOnUiThread(() -> Toast.makeText(
-                        MainActivity.this,
-                        ok ? "ذخیره شد: پوشه دانلودها" : "ذخیره ناموفق",
-                        Toast.LENGTH_LONG
-                ).show());
+                final Uri openUri = uri;
+                final String openMime = (mime == null || mime.isEmpty())
+                        ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        : mime;
+
+                runOnUiThread(() -> {
+                    if (openUri == null) {
+                        Toast.makeText(MainActivity.this, "ذخیره ناموفق", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    Toast.makeText(MainActivity.this, "ذخیره شد — در حال باز کردن…", Toast.LENGTH_SHORT).show();
+                    openSavedFile(openUri, openMime);
+                });
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(
                         MainActivity.this,
@@ -132,6 +139,20 @@ public class MainActivity extends Activity {
                         Toast.LENGTH_LONG
                 ).show());
             }
+        }
+    }
+
+    private void openSavedFile(Uri uri, String mime) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, mime);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Intent chooser = Intent.createChooser(intent, "باز کردن فایل اکسل");
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(chooser);
+        } catch (Exception e) {
+            Toast.makeText(this, "فایل ذخیره شد ولی باز نشد. از پوشه دانلودها باز کنید.", Toast.LENGTH_LONG).show();
         }
     }
 
