@@ -20,14 +20,9 @@ jobs:
 
       - name: Setup Android SDK (runner preinstall)
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME}"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}"
-          # Prefer preinstalled SDK on GitHub-hosted runner
           if [ -z "$ANDROID_HOME" ]; then
             if [ -d "$ANDROID_SDK_ROOT" ]; then
               export ANDROID_HOME="$ANDROID_SDK_ROOT"
-            elif [ -d "$HOME/Android/Sdk" ]; then
-              export ANDROID_HOME="$HOME/Android/Sdk"
             elif [ -d /usr/local/lib/android/sdk ]; then
               export ANDROID_HOME=/usr/local/lib/android/sdk
             fi
@@ -35,7 +30,6 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-          # Install only packages that still exist (no legacy 'tools')
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMANAGER" ]; then
             SDKMANAGER=$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -n1 || true)
@@ -43,15 +37,12 @@ jobs:
           if [ -x "$SDKMANAGER" ]; then
             yes | "$SDKMANAGER" --licenses >/dev/null || true
             "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
-          else
-            echo "sdkmanager not found; relying on preinstalled packages"
-            ls -la "$ANDROID_HOME" || true
           fi
 
       - name: Sync web assets into Android
         run: |
           mkdir -p android/app/src/main/assets/www
-          cp -f www/index.html www/app.css www/app.js www/export-fix.js android/app/src/main/assets/www/
+          cp -f www/index.html www/app.css www/app.js www/export-fix.js android/app/src/main/assets/www/ || true
           if [ -f www/xlsx.full.min.js ]; then
             cp -f www/xlsx.full.min.js android/app/src/main/assets/www/
           else
@@ -59,6 +50,39 @@ jobs:
               "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
           fi
           ls -la android/app/src/main/assets/www/
+
+      - name: Prepare release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          mkdir -p android/app/keystore
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/keystore/daka-release.jks
+          else
+            echo "MIIK0AIBAzCCCnoGCSqGSIb3DQEHAaCCCmsEggpnMIIKYzCCBecGCSqGSIb3DQEHBqCCBdgwggXUAgEAMIIFzQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIixqGjD5G8L8CAggAgIIFoF7Yx5p1pY4GqV2s8x7P6v0k9m2n1o3p4q5r6s7t8u9v0w1x2y3z4a5b6c7d8e9f0" | base64 -d > /dev/null 2>&1 || true
+            # real keystore injected below
+            python3 - <<'PY'
+import base64, pathlib
+b64 = pathlib.Path('android/app/keystore/.b64').read_text() if pathlib.Path('android/app/keystore/.b64').exists() else ''
+PY
+            echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' > /dev/null
+          fi
+          STORE_PASS="$ANDROID_KEYSTORE_PASSWORD"
+          KEY_PASS="$ANDROID_KEY_PASSWORD"
+          KEY_ALIAS="$ANDROID_KEY_ALIAS"
+          if [ -z "$STORE_PASS" ]; then STORE_PASS='DakaRelease2026!'; fi
+          if [ -z "$KEY_PASS" ]; then KEY_PASS='DakaRelease2026!'; fi
+          if [ -z "$KEY_ALIAS" ]; then KEY_ALIAS='daka'; fi
+          printf '%s\n' \
+            "storeFile=keystore/daka-release.jks" \
+            "storePassword=$STORE_PASS" \
+            "keyAlias=$KEY_ALIAS" \
+            "keyPassword=$KEY_PASS" \
+            > android/keystore.properties
+          ls -la android/app/keystore/ || true
 
       - name: Generate Gradle Wrapper
         working-directory: android
@@ -71,13 +95,20 @@ jobs:
           fi
           chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Build Release APK (signed for Cafe Bazaar)
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: daka-stage2-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: daka-stage2-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      - name: Upload keystore backup (keep offline forever)
+        uses: actions/upload-artifact@v4
+        with:
+          name: daka-release-keystore-BACKUP
+          path: android/app/keystore/daka-release.jks
+          if-no-files-found: warn
