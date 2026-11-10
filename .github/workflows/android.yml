@@ -60,10 +60,11 @@ jobs:
           mkdir -p android/app/keystore
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/keystore/daka-release.jks
+          elif [ -f android/ci/daka-release.jks.b64 ]; then
+            base64 -d android/ci/daka-release.jks.b64 > android/app/keystore/daka-release.jks
           else
-            base64 -d > android/app/keystore/daka-release.jks << 'B64'
-MIIK0AIBAzCCCnoGCSqGSIb3DQEHAaCCCmsEggpnMIIKYzCCBecGCSqGSIb3DQEHBqCCBdgwggXUAgEAMIIFzQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIixqGjD5G8L8CAggAgIIFoA==
-B64
+            echo "Missing release keystore" >&2
+            exit 1
           fi
           STORE_PASS="$ANDROID_KEYSTORE_PASSWORD"
           KEY_PASS="$ANDROID_KEY_PASSWORD"
@@ -71,8 +72,14 @@ B64
           if [ -z "$STORE_PASS" ]; then STORE_PASS='DakaRelease2026!'; fi
           if [ -z "$KEY_PASS" ]; then KEY_PASS='DakaRelease2026!'; fi
           if [ -z "$KEY_ALIAS" ]; then KEY_ALIAS='daka'; fi
-          printf '%s\n' "storeFile=keystore/daka-release.jks" "storePassword=$STORE_PASS" "keyAlias=$KEY_ALIAS" "keyPassword=$KEY_PASS" > android/keystore.properties
+          printf '%s\n' \
+            "storeFile=keystore/daka-release.jks" \
+            "storePassword=$STORE_PASS" \
+            "keyAlias=$KEY_ALIAS" \
+            "keyPassword=$KEY_PASS" \
+            > android/keystore.properties
           ls -la android/app/keystore/
+          keytool -list -keystore android/app/keystore/daka-release.jks -storepass "$STORE_PASS"
 
       - name: Generate Gradle Wrapper
         working-directory: android
