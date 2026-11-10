@@ -49,7 +49,6 @@ jobs:
             curl -fsSL -o android/app/src/main/assets/www/xlsx.full.min.js \
               "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
           fi
-          ls -la android/app/src/main/assets/www/
 
       - name: Prepare release keystore
         env:
@@ -62,13 +61,9 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/keystore/daka-release.jks
           else
-            echo "MIIK0AIBAzCCCnoGCSqGSIb3DQEHAaCCCmsEggpnMIIKYzCCBecGCSqGSIb3DQEHBqCCBdgwggXUAgEAMIIFzQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIixqGjD5G8L8CAggAgIIFoF7Yx5p1pY4GqV2s8x7P6v0k9m2n1o3p4q5r6s7t8u9v0w1x2y3z4a5b6c7d8e9f0" | base64 -d > /dev/null 2>&1 || true
-            # real keystore injected below
-            python3 - <<'PY'
-import base64, pathlib
-b64 = pathlib.Path('android/app/keystore/.b64').read_text() if pathlib.Path('android/app/keystore/.b64').exists() else ''
-PY
-            echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' > /dev/null
+            base64 -d > android/app/keystore/daka-release.jks << 'B64'
+MIIK0AIBAzCCCnoGCSqGSIb3DQEHAaCCCmsEggpnMIIKYzCCBecGCSqGSIb3DQEHBqCCBdgwggXUAgEAMIIFzQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIixqGjD5G8L8CAggAgIIFoA==
+B64
           fi
           STORE_PASS="$ANDROID_KEYSTORE_PASSWORD"
           KEY_PASS="$ANDROID_KEY_PASSWORD"
@@ -76,13 +71,8 @@ PY
           if [ -z "$STORE_PASS" ]; then STORE_PASS='DakaRelease2026!'; fi
           if [ -z "$KEY_PASS" ]; then KEY_PASS='DakaRelease2026!'; fi
           if [ -z "$KEY_ALIAS" ]; then KEY_ALIAS='daka'; fi
-          printf '%s\n' \
-            "storeFile=keystore/daka-release.jks" \
-            "storePassword=$STORE_PASS" \
-            "keyAlias=$KEY_ALIAS" \
-            "keyPassword=$KEY_PASS" \
-            > android/keystore.properties
-          ls -la android/app/keystore/ || true
+          printf '%s\n' "storeFile=keystore/daka-release.jks" "storePassword=$STORE_PASS" "keyAlias=$KEY_ALIAS" "keyPassword=$KEY_PASS" > android/keystore.properties
+          ls -la android/app/keystore/
 
       - name: Generate Gradle Wrapper
         working-directory: android
@@ -106,9 +96,9 @@ PY
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
-      - name: Upload keystore backup (keep offline forever)
+      - name: Upload keystore backup (KEEP OFFLINE FOREVER)
         uses: actions/upload-artifact@v4
         with:
           name: daka-release-keystore-BACKUP
           path: android/app/keystore/daka-release.jks
-          if-no-files-found: warn
+          if-no-files-found: error
