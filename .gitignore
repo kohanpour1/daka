@@ -15,6 +15,14 @@ android/gradle/wrapper/gradle-wrapper.properties
 *.dex
 *.class
 
+# Release signing
+android/keystore/
+android/app/keystore/
+android/keystore.properties
+*.jks
+*.keystore
+*.jks.b64
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -23,6 +31,11 @@ Thumbs.db
 *.swp
 *~
 
-# Node (if added later)
+# Node / Desktop
 node_modules/
 dist/
+desktop/node_modules/
+desktop/dist/
+desktop/build/icon.png
+desktop/build/icon.ico
+*.exe
